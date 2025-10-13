@@ -4,85 +4,234 @@
     <meta charset="UTF-8">
     <title>Zoom Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: black; margin:0; padding:20px; color:white; }
-        .container { display:flex; justify-content:space-between; gap:20px; }
-        .left,.center,.right { background:#1a1a1a; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
-        .left{flex:1;} .center{flex:1; text-align:center;} .right{flex:1; text-align:right;}
-        table {width:100%; border-collapse:collapse; margin-bottom:15px;}
-        th,td {border:1px solid #333; padding:10px; text-align:center;}
-        th {background-color:#4CAF50; color:white;}
-        .form-box{margin:15px 0; padding:15px; border:1px solid #444; border-radius:5px; background:#2a2a2a; text-align:center;}
-        .capacity {position:relative; width:200px; height:200px; margin:20px auto; border-radius:50%; background:conic-gradient(red 0%, #1a1a1a 0%); display:flex; align-items:center; justify-content:center; transition:0.4s;}
-        .capacity-inner{position:absolute; width:160px; height:160px; background:black; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:18px; font-weight:bold;}
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .left, .center, .right {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .left { flex: 1; }
+        .center { flex: 1; text-align: center; }
+        .right { flex: 1; text-align: right; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+            color: white;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .form-box {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background: #2a2a2a;
+            text-align: center;
+        }
+
+        /* Circular Progress Style */
+        .capacity {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 50%;
+            background: conic-gradient(red 0%, #1a1a1a 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.6s ease-in-out;
+        }
+
+        .capacity-inner {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            background: black;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .usage-info {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .controls { margin-bottom: 20px; }
+        .controls input[type="checkbox"] { margin-right: 10px; }
+        h2, h3 { color: white; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #45a049; }
+        input, select {
+            background-color: #333;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
-<h2>Zoom Dashboard</h2>
-<div class="container">
-    <div class="left">
-        <h3>All Meetings</h3>
-        <table id="meetingsTable">
-            <tr><th>#</th><th>Meeting ID</th><th>Qty</th><th>Start</th><th>Timeout</th><th>Nm</th></tr>
-        </table>
-    </div>
-    <div class="center">
-        <div class="form-box">
-            <h3>Add Meeting</h3>
-            <form id="meetingForm">
-                <label>Meeting ID:</label><br><input type="text" id="meetingId" required><br>
-                <label>Password:</label><br><input type="text" id="meetingPassword" required><br>
-                <label>Name Type:</label><br>
-                <select id="nameType">
-                    <option value="english">English</option>
-                    <option value="hindi">Hindi</option>
-                </select><br>
-                <label>Members (divisible by 10 & >0):</label><br><input type="number" id="members" min="10" step="10" required><br>
-                <label>Timeout (seconds >120):</label><br><input type="number" id="timeout" min="121" required><br><br>
-                <button type="submit">Submit</button>
-            </form>
+    <h2>Zoom Dashboard</h2>
+
+    <div class="container" id="dashboard">
+        <div class="left" id="meetingsSection">
+            <h3>All Meetings</h3>
+            <table id="meetingsTable">
+                <tr>
+                    <th>#</th>
+                    <th>Meeting ID</th>
+                    <th>Qty</th>
+                    <th>Start</th>
+                    <th>Timeout</th>
+                    <th>Nm</th>
+                </tr>
+            </table>
+        </div>
+
+        <div class="center" id="formSection">
+            <div class="form-box">
+                <h3>Add Meeting</h3>
+                <form id="meetingForm">
+                    <label>Meeting ID:</label><br>
+                    <input type="text" id="meetingId" required><br>
+                    <label>Meeting Password:</label><br>
+                    <input type="text" id="meetingPassword" required><br>
+                    <label>Name Type:</label><br>
+                    <select id="nameType">
+                        <option value="english">English (Faker)</option>
+                        <option value="hindi">Hindi (Indian-names)</option>
+                    </select><br>
+                    <label>Members (must be divisible by 10 and not zero):</label><br>
+                    <input type="number" id="members" min="10" step="10" required><br>
+                    <label>Timeout (must be greater than 120 seconds):</label><br>
+                    <input type="number" id="timeout" min="121" required><br><br>
+                    <button type="submit">Submit</button>
+                    <button type="button" onclick="resetForm()">Cancel</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="right" id="chartSection">
+            <div class="controls">
+                <input type="checkbox" id="showTable" checked> Table
+                <input type="checkbox" id="showForm" checked> Form
+                <input type="checkbox" id="showChart" checked> Chart
+            </div>
+            <h3>Capacity</h3>
+            <p>Total: 8000 Members</p>
+            <div class="capacity" id="capacityCircle">
+                <div class="capacity-inner" id="capacityText">0%</div>
+            </div>
+            <div class="usage-info" id="usageInfo">
+                Usage: 0 / 8000<br>
+                Remaining: 8000
+            </div>
         </div>
     </div>
-    <div class="right">
-        <h3>Capacity</h3>
-        <p>Total: 8000 Members</p>
-        <div class="capacity" id="capacityCircle">
-            <div class="capacity-inner" id="capacityText">0%</div>
-        </div>
-        <p id="usageText">Usage: 0 / 8000</p>
-    </div>
-</div>
 
-<script>
-let used = 0, total = 8000;
-const capacityCircle = document.getElementById('capacityCircle');
-const capacityText = document.getElementById('capacityText');
-const usageText = document.getElementById('usageText');
+    <script>
+        let used = 0;
+        const total = 8000;
+        const capacityCircle = document.getElementById('capacityCircle');
+        const capacityText = document.getElementById('capacityText');
+        const usageInfo = document.getElementById('usageInfo');
 
-document.getElementById('meetingForm').addEventListener('submit', async function(e){
-    e.preventDefault();
-    const meetingId = document.getElementById('meetingId').value;
-    const password = document.getElementById('meetingPassword').value;
-    const members = parseInt(document.getElementById('members').value);
-    const timeout = parseInt(document.getElementById('timeout').value);
-    const nameType = document.getElementById('nameType').value;
+        document.getElementById('meetingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-    if(members<=0 || members%10!==0){ alert('Members divisible by 10 & >0'); return; }
-    if(used+members>total){ alert('Cannot exceed 8000'); return; }
+            const meetingId = document.getElementById('meetingId').value;
+            const nameType = document.getElementById('nameType').value;
+            const members = parseInt(document.getElementById('members').value);
+            const timeout = parseInt(document.getElementById('timeout').value);
+            const now = new Date().toLocaleTimeString('en-US', { hour12: true });
 
-    const table = document.getElementById('meetingsTable');
-    const now = new Date().toLocaleTimeString();
-    const row = table.insertRow(-1);
-    row.innerHTML = `<td>${table.rows.length-1}</td><td>${meetingId}</td><td>${members}</td><td>${now}</td><td>${timeout} Sec</td><td>${nameType.charAt(0)}</td>`;
+            // ✅ Validation
+            if (members <= 0 || members % 10 !== 0) {
+                alert('Members must be divisible by 10 and not zero!');
+                return;
+            }
+            if (timeout <= 120) {
+                alert('Timeout must be greater than 120 seconds!');
+                return;
+            }
+            if (used + members > total) {
+                alert('Cannot exceed 8000 members!');
+                return;
+            }
 
-    used+=members;
-    const percent = (used/total)*100;
-    usageText.textContent=`Usage: ${used} / ${total}`;
-    capacityCircle.style.background=`conic-gradient(red ${percent}%, #1a1a1a ${percent}%)`;
-    capacityText.textContent=`${Math.round(percent)}%`;
+            // Add new row to table
+            const table = document.getElementById('meetingsTable');
+            const row = table.insertRow(-1);
+            row.innerHTML = `<td>${table.rows.length - 1}</td>
+                             <td>${meetingId}</td>
+                             <td>${members}</td>
+                             <td>${now}</td>
+                             <td>${timeout} Sec</td>
+                             <td>${nameType.charAt(0).toUpperCase()}</td>`;
 
-    // Send to backend
-    await fetch('/start-bots', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({meetingId,password,members,timeout,nameType})});
-});
-</script>
+            // Update usage
+            used += members;
+            const percent = (used / total) * 100;
+            const remaining = total - used;
+
+            capacityCircle.style.background = `conic-gradient(red ${percent}%, #1a1a1a ${percent}%)`;
+            capacityText.textContent = `${Math.round(percent)}%`;
+            usageInfo.innerHTML = `Usage: ${used} / ${total}<br>Remaining: ${remaining}`;
+
+            resetForm();
+        });
+
+        function resetForm() {
+            document.getElementById('meetingForm').reset();
+        }
+
+        // Toggle sections
+        document.getElementById('showTable').addEventListener('change', function() {
+            document.getElementById('meetingsSection').style.display = this.checked ? 'block' : 'none';
+        });
+        document.getElementById('showForm').addEventListener('change', function() {
+            document.getElementById('formSection').style.display = this.checked ? 'block' : 'none';
+        });
+        document.getElementById('showChart').addEventListener('change', function() {
+            document.getElementById('chartSection').style.display = this.checked ? 'block' : 'none';
+        });
+    </script>
 </body>
 </html>
