@@ -1,8 +1,7 @@
 FROM python:3.11-slim
 
-# Firefox और Playwright डिपेंडेंसीज
 RUN apt-get update && apt-get install -y \
-    firefox-esr \
+    wget \
     libnss3 \
     libx11-6 \
     libxcomposite1 \
@@ -18,7 +17,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN playwright install firefox
+RUN playwright install chromium
 
 COPY . .
+
 CMD ["python", "app.py"]
