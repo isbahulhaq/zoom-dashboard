@@ -3,7 +3,7 @@ import asyncio
 import os
 import sys
 
-# Add FunHindi folder to import path
+# FunHindi folder ko import path me daalna
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'FunHindi'))
 
 from HindiFun import start as funhindi_start
@@ -22,7 +22,6 @@ async def join_meeting():
         num_users = int(request.form['members'])
         timeout = int(request.form['timeout'])
 
-        # Run the FunHindi automation in background
         asyncio.create_task(run_funhindi(meetingcode, passcode, num_users, timeout))
         return jsonify({"status": "Started", "meeting": meetingcode})
     except Exception as e:
