@@ -23,7 +23,6 @@ body {
     position: relative;
 }
 
-/* Canvas for particles behind login */
 #particleCanvas {
     position: absolute;
     top:0;
@@ -68,8 +67,7 @@ body {
 #loginError { color: #ff6b6b; margin-top:8px; display:none; }
 .show-pass { display:flex; align-items:center; gap:8px; justify-content:flex-start; color:#bbb; font-size:13px; margin-top:6px; }
 
-/* DASHBOARD SECTION STYLES (original) */
-body, input, select, button { font-family: Arial,sans-serif; }
+/* DASHBOARD SECTION */
 .container {
     display: flex;
     justify-content: space-between;
@@ -145,7 +143,6 @@ input, select {
     padding: 5px;
 }
 
-/* hide dashboard initially */
 #dashboard { display: none; }
 </style>
 </head>
@@ -171,7 +168,7 @@ input, select {
     </div>
 </div>
 
-<!-- DASHBOARD SECTION (original) -->
+<!-- DASHBOARD SECTION -->
 <div id="dashboard">
     <h2>Zoom Dashboard</h2>
     <div class="container" id="dashboardContainer">
@@ -197,16 +194,11 @@ input, select {
                     <input type="text" id="meetingId" required><br>
                     <label>Meeting Password:</label><br>
                     <input type="text" id="meetingPassword" required><br>
-                    <label>Name Type:</label><br>
-                    <select id="nameType">
-                        <option value="english">English (Faker)</option>
-                        <option value="hindi">Hindi (Indian-names)</option>
-                    </select><br>
-                    <label>Members (must be divisible by 10 and not zero):</label><br>
+                    <label>Members:</label><br>
                     <input type="number" id="members" min="10" step="10" required><br>
-                    <label>Timeout (must be greater than 120 seconds):</label><br>
+                    <label>Timeout (seconds):</label><br>
                     <input type="number" id="timeout" min="121" required><br><br>
-                    <button type="submit">Submit</button>
+                    <button type="submit">Start Meeting</button>
                     <button type="button" onclick="resetForm()">Cancel</button>
                 </form>
             </div>
@@ -232,9 +224,7 @@ input, select {
 </div>
 
 <script>
-/********************
- * PARTICLES BACKGROUND
- ********************/
+/************* PARTICLES *************/
 const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
 let width = canvas.width = window.innerWidth;
@@ -246,140 +236,65 @@ window.addEventListener('resize', () => {
 });
 
 const particles = [];
-const particleCount = 80;
-for(let i=0; i<particleCount; i++){
-    particles.push({
-        x: Math.random()*width,
-        y: Math.random()*height,
-        r: Math.random()*3+1,
-        dx: (Math.random()-0.5)*1.5,
-        dy: (Math.random()-0.5)*1.5
-    });
+for(let i=0; i<80; i++){
+    particles.push({x:Math.random()*width, y:Math.random()*height, r:Math.random()*3+1, dx:(Math.random()-0.5)*1.5, dy:(Math.random()-0.5)*1.5});
 }
 
 function animateParticles(){
     ctx.clearRect(0,0,width,height);
-    for(let i=0;i<particles.length;i++){
-        const p = particles[i];
+    for(let p of particles){
         ctx.beginPath();
         ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
         ctx.fillStyle = "rgba(0,200,255,0.75)";
         ctx.fill();
         p.x += p.dx;
         p.y += p.dy;
-        if(p.x<0||p.x>width) p.dx*=-1;
-        if(p.y<0||p.y>height) p.dy*=-1;
-    }
-    for(let a=0;a<particles.length;a++){
-        for(let b=a+1;b<particles.length;b++){
-            const dx = particles[a].x - particles[b].x;
-            const dy = particles[a].y - particles[b].y;
-            const dist = Math.sqrt(dx*dx+dy*dy);
-            if(dist<120){
-                ctx.beginPath();
-                ctx.strokeStyle = "rgba(0,200,255,"+(1-dist/120)+")";
-                ctx.moveTo(particles[a].x,particles[a].y);
-                ctx.lineTo(particles[b].x,particles[b].y);
-                ctx.stroke();
-            }
-        }
+        if(p.x<0||p.x>width)p.dx*=-1;
+        if(p.y<0||p.y>height)p.dy*=-1;
     }
     requestAnimationFrame(animateParticles);
 }
 animateParticles();
 
-/********************
- * LOGIN HANDLER
- ********************/
-// Updated credentials as requested
+/************* LOGIN *************/
 const FIXED_EMAIL = "isbahaulhaq692@gmail.com";
 const FIXED_PASSWORD = "20140204547";
-
 document.getElementById('loginForm').addEventListener('submit', function(e){
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value.trim();
-
     if(email === FIXED_EMAIL && pass === FIXED_PASSWORD){
         document.getElementById('loginSection').style.display='none';
         document.getElementById('dashboard').style.display='block';
-        document.getElementById('loginError').style.display='none';
     } else {
         document.getElementById('loginError').style.display='block';
     }
 });
 
-// Show password toggle
-document.getElementById('togglePass').addEventListener('change', function(){
-    const p = document.getElementById('password');
-    p.type = this.checked ? 'text' : 'password';
-});
-
-/********************
- * DASHBOARD LOGIC (original)
- ********************/
-let used = 0;
-const total = 8000;
-const capacityCircle = document.getElementById('capacityCircle');
-const capacityText = document.getElementById('capacityText');
-const usageInfo = document.getElementById('usageInfo');
-
-document.getElementById('meetingForm').addEventListener('submit', function(e) {
+/************* BACKEND CONNECTION *************/
+document.getElementById('meetingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-
     const meetingId = document.getElementById('meetingId').value;
-    const nameType = document.getElementById('nameType').value;
-    const members = parseInt(document.getElementById('members').value);
-    const timeout = parseInt(document.getElementById('timeout').value);
-    const now = new Date().toLocaleTimeString('en-US', { hour12: true });
+    const meetingPassword = document.getElementById('meetingPassword').value;
+    const members = document.getElementById('members').value;
+    const timeout = document.getElementById('timeout').value;
 
-    if (members <= 0 || members % 10 !== 0) {
-        alert('Members must be divisible by 10 and not zero!');
-        return;
+    const formData = new FormData();
+    formData.append('meeting_id', meetingId);
+    formData.append('password', meetingPassword);
+    formData.append('members', members);
+    formData.append('timeout', timeout);
+
+    try {
+        const res = await fetch('/join', { method: 'POST', body: formData });
+        const data = await res.json();
+        alert(`Status: ${data.status}`);
+    } catch (err) {
+        alert("Error sending request to server.");
     }
-    if (timeout <= 120) {
-        alert('Timeout must be greater than 120 seconds!');
-        return;
-    }
-    if (used + members > total) {
-        alert('Cannot exceed 8000 members!');
-        return;
-    }
-
-    const table = document.getElementById('meetingsTable');
-    const row = table.insertRow(-1);
-    row.innerHTML = `<td>${table.rows.length - 1}</td>
-                     <td>${meetingId}</td>
-                     <td>${members}</td>
-                     <td>${now}</td>
-                     <td>${timeout} Sec</td>
-                     <td>${nameType.charAt(0).toUpperCase()}</td>`;
-
-    used += members;
-    const percent = (used / total) * 100;
-    const remaining = total - used;
-
-    capacityCircle.style.background = `conic-gradient(red ${percent}%, #1a1a1a ${percent}%)`;
-    capacityText.textContent = `${Math.round(percent)}%`;
-    usageInfo.innerHTML = `Usage: ${used} / ${total}<br>Remaining: ${remaining}`;
-
-    resetForm();
 });
 
-function resetForm() {
-    document.getElementById('meetingForm').reset();
-}
-
-// Toggle sections
-document.getElementById('showTable').addEventListener('change', function() {
-    document.getElementById('meetingsSection').style.display = this.checked ? 'block' : 'none';
-});
-document.getElementById('showForm').addEventListener('change', function() {
-    document.getElementById('formSection').style.display = this.checked ? 'block' : 'none';
-});
-document.getElementById('showChart').addEventListener('change', function() {
-    document.getElementById('chartSection').style.display = this.checked ? 'block' : 'none';
-});
+function resetForm() { document.getElementById('meetingForm').reset(); }
 </script>
 </body>
 </html>
