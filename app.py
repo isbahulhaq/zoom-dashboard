@@ -1,42 +1,50 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask
 import asyncio
-import os
-import sys
+from playwright.async_api import async_playwright
+import nest_asyncio
 
-# FunHindi folder ko import path me daalna
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'FunHindi'))
-
-from HindiFun import start as funhindi_start
-
-app = Flask(__name__, template_folder='templates')
+nest_asyncio.apply()
+app = Flask(__name__)
 
 @app.route('/')
-def dashboard():
-    return render_template('dashboard.html')
+def home():
+    return "✅ Zoom Dashboard is Live on Render"
 
-@app.route('/join', methods=['POST'])
-async def join_meeting():
-    try:
-        meetingcode = request.form['meeting_id']
-        passcode = request.form['password']
-        num_users = int(request.form['members'])
-        timeout = int(request.form['timeout'])
+@app.route('/join')
+def join_meeting():
+    asyncio.run(run_zoom_bot())
+    return "🤖 Joining Zoom meeting now..."
 
-        asyncio.create_task(run_funhindi(meetingcode, passcode, num_users, timeout))
-        return jsonify({"status": "Started", "meeting": meetingcode})
-    except Exception as e:
-        return jsonify({"status": "Error", "error": str(e)})
+async def run_zoom_bot():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+                "--disable-software-rasterizer"
+            ]
+        )
+        context = await browser.new_context()
+        page = await context.new_page()
 
-async def run_funhindi(meetingcode, passcode, num_users, timeout):
-    print(f"🚀 Starting FunHindi automation for meeting {meetingcode}")
-    wait_time = timeout
-    tasks = []
-    for i in range(num_users):
-        user = f"User{i}"
-        task = asyncio.create_task(funhindi_start(user, wait_time, meetingcode, passcode))
-        tasks.append(task)
-    await asyncio.gather(*tasks)
-    print("✅ All bots finished")
+        # 👇 Replace this with your actual Zoom Meeting Link
+        meeting_url = "https://zoom.us/wc/join/1234567890"
+        await page.goto(meeting_url)
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))
+        print("🎯 Zoom meeting page loaded!")
+
+        # Optional: Enter Name Automatically
+        try:
+            await page.fill('input[name="username"]', "Render Bot 🚀")
+        except:
+            pass
+
+        await asyncio.sleep(15)
+        await browser.close()
+        print("✅ Zoom meeting join script finished.")
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=10000)
