@@ -1,46 +1,21 @@
-# ---------- Base Image ----------
-FROM python:3.11-slim
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# ---------- System Dependencies ----------
-RUN apt-get update && apt-get install -y \
-    wget \
-    libnss3 \
-    libx11-6 \
-    libxcomposite1 \
-    libxcursor1 \
-    libxi6 \
-    libxtst6 \
-    libglib2.0-0 \
-    libgl1 \
-    libfontconfig1 \
-    libxrandr2 \
-    libasound2 \
-    libatk1.0-0 \
-    libcups2 \
-    libxkbcommon0 \
-    libxdamage1 \
-    libpangocairo-1.0-0 \
-    libcairo2 \
-    libatspi2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# ---------- Work Directory ----------
+# Set the working directory in the container
 WORKDIR /app
 
-# ---------- Copy Requirements ----------
-COPY requirements.txt .
-
-# ---------- Install Dependencies ----------
-RUN pip install --no-cache-dir -r requirements.txt
-RUN playwright install-deps
-RUN playwright install chromium
-
-# ---------- Environment Variables ----------
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-ENV PORT=10000
-
-# ---------- Copy Application ----------
+# Copy the current directory contents into the container at /app
 COPY . .
 
-# ---------- Run Flask ----------
+# Install dependencies from requirements.txt
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Expose the port the app runs on
+EXPOSE 5000
+
+# Define environment variable (optional for Flask)
+ENV FLASK_APP=app.py
+
+# Command to run your app (when the container starts)
 CMD ["python", "app.py"]
